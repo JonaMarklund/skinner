@@ -39,7 +39,8 @@ Updates:
     2024-06-10 : v1.2.0 : Rearranging some of the App import UI elements.  Bugfixing
         App.importSkin : It wasn't closing the undoChunk.  Adding the 'Auto-Fix Broken
         skinCluster' to the 'Extras' tab.  Updating tooltips, making multi-line.
-
+    2024-10-08 : v1.2.1 : @JonaMarklund Added Maya 2025+ support. Fixed check state errors. 
+    
 Examples:
 
 # Launch the window:
@@ -54,7 +55,10 @@ import maya.api.OpenMaya as om2
 
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 
-from PySide2 import QtWidgets, QtCore, QtGui
+if int(mc.about(version=True)) >= 2025:
+    from PySide6 import QtWidgets, QtCore, QtGui
+else:
+    from PySide2 import QtWidgets, QtCore, QtGui
 
 from . import core, utils
 
@@ -1165,13 +1169,13 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
             fallbackSkinningMethod = "closestNeighbors"
         elif uiFallbackSkinMethod == "Closest Point":
             fallbackSkinningMethod = "closestPoint"
-        buildMissingInfs = True if int(self.widget_buildMissingInfs.checkState()) else False
+        buildMissingInfs = int(self.widget_buildMissingInfs.isChecked() == "true")
         setToBindpose = self.widget_importSetBindpose.isChecked()
-        forceUberChunk = True if int(self.widget_forceUberChunk.checkState()) else False
-        importUsingPreDeformedPoints = True if int(self.widget_usePreDeformedShape.checkState()) else False
-        unbindFirst = True if int(self.widget_unbindFirst.checkState()) else False
-        selInsteadOfSkin = True if int(self.widget_selectInstead.checkState()) else False
-        verbose = True if int(self.widget_verboseLogging.checkState()) else False  #!!! NEED TO FIX
+        forceUberChunk = int(self.widget_forceUberChunk.isChecked() == "true")
+        importUsingPreDeformedPoints = int(self.widget_usePreDeformedShape.isChecked() == "true")
+        unbindFirst = int(self.widget_unbindFirst.isChecked() == "true")
+        selInsteadOfSkin = int(self.widget_selectInstead.isChecked() == "true")
+        verbose = int(self.widget_verboseLogging.isChecked() == "true")
         printOverview = False
         printOverviewMode = "byImportType"
         checkedButWidget = self.widget_importOvererviewGroup.checkedButton()
@@ -1183,7 +1187,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
             printOverview = True
             printOverviewMode = "byMesh"
 
-        filterByVertNormal = True if self.widget_useVertNormal.isChecked() else False
+        filterByVertNormal = int(self.widget_useVertNormal.isChecked() == "true")
         vertNormalTolerance = float(self.widget_vertNormalTollerance.text())
         postSmoothSteps = self.widget_postSmooth.value()
         postSmoothWeightDiff = float(self.widget_postSmoothWeightDiff.text())
@@ -1269,8 +1273,8 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
             self.settings.setValue(SETTING_LAST_SAVE_PATH, os.path.dirname(path))
         elif mode == "temp":
             path = core.TEMP_FILE_PATH
-
-        verbose = True if int(self.widget_verboseLogging.checkState()) else False
+        
+        verbose = int(self.widget_verboseLogging.isChecked() == "true")
 
         setToBindPose = self.widget_exportSetBindpose.isChecked()
 
